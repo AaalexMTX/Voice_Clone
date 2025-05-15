@@ -1,4 +1,5 @@
 # encoder/audio_processing.py
+# 提供 preprocess_wav() 函数, clean预处理函数
 
 import os
 import numpy as np
@@ -37,12 +38,7 @@ def trim_long_silences(wav, top_db=30):
     trimmed_wav = np.concatenate([wav[start:end] for start, end in intervals])
     return trimmed_wav
 
-def save_wav(wav, path, sr=TARGET_SAMPLE_RATE):
-    """
-    保存音频为 wav 文件
-    """
-    sf.write(path, wav, sr)
-
+# 处理流程1，手动处理加载、静音处理、归一化等操作
 def preprocess_wav1(path, trim_silence=True, normalize=True):
     """
     全流程预处理：加载、静音裁剪、音量归一化
@@ -54,6 +50,13 @@ def preprocess_wav1(path, trim_silence=True, normalize=True):
         wav = normalize_volume(wav)
     return wav
 
+def save_wav(wav, path, sr=TARGET_SAMPLE_RATE):
+    """
+    保存音频为 wav 文件
+    """
+    sf.write(path, wav, sr)
+
+# 对音频数据进行预处理，统一采样率、去除静音、归一化，最后返回 float32 格式的波形。
 def preprocess_wav(fpath_or_wav, target_sr=16000):
     """
     加载和预处理音频，统一采样率和归一化。
@@ -63,18 +66,20 @@ def preprocess_wav(fpath_or_wav, target_sr=16000):
     返回:
         预处理后的波形，float32格式，[-1, 1]
     """
-    # 加载音频文件
+    # 内置函数判断是否为字符串，用于加载音频文件,判断是路径还是波形数据
     if isinstance(fpath_or_wav, str):
+        # 路径字符串
         wav, sr = librosa.load(fpath_or_wav, sr=target_sr)
     else:
+        # NumPy 数组说明已经加载了音频，就直接用它，不再做重采样。
         wav = fpath_or_wav
         sr = target_sr
 
-    # 去除静音首尾
+    # 自动检测并去除 音频开头和结尾的静音段，使音频更紧凑，便于后续处理。
     wav, _ = librosa.effects.trim(wav)
 
-    # 归一化
+    # 将整个音频的最大振幅值标准化为 1，使得数据范围固定在 [-1, 1]， 避免因音量差异对模型训练造成影响。
     if np.abs(wav).max() > 0:
         wav = wav / np.abs(wav).max()
-
+    # float32深度学习模型常用的输入类型，此时wav是已经统一采样率 + 去静音 + 归一化 的音频波形数组
     return wav.astype(np.float32)

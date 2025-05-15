@@ -56,17 +56,18 @@ Voice_Clone_Trans/
 ```bash
 Voice_Clone_Trans/
 ├── data/
-│   ├── raw/                        # 存放原始语音数据（wav）
+│   ├── raw/                       # 存放原始语音数据（wav）
 │   ├── processed/
-│   │   ├── mel/                    # 预处理得到的 mel-spectrogram（可选）
-│   │   ├── clean/                    # 处理后的语音输出在这里
-│   │   └── embeddings/            # 提取的 speaker embeddings
+│   │   ├── mel/                   # 来自某段音频的 mel 特征
+│   │   ├── clean/                 # 对原始音频进行"静音、重采样16Khz、归一化"等操作
+│   │   └── embeddings/            # 使用 speaker encoder 模型提取。处理后的音频（clean/）中提取出一个 256 维的嵌入向量。
 │   └── metadata.csv               # 每条语音对应说话人ID、文件路径等
 ├── encoder/                        # 说话人编码器（Speaker Encoder）
 │   ├── audio_processing.py        # 基础音频加载、裁剪、采样
 │   ├── extract_mel.py             # 从音频生成 mel
+├── preprocess/                        # 说话人编码器（Speaker Encoder）
 ├── train/                    # 训练逻辑
-├── config/                    # 配置文件
+├── config/                   # 配置文件
 ├── inference/                # 推理脚本（synthesize.py等）
 ├── utils/                    # 工具代码
 ├── results/                  # 结果输出
